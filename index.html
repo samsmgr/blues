@@ -1,0 +1,154 @@
+ <!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <title>BRONZEVILLE BLUES</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.13.0/mapbox-gl.css' rel='stylesheet' />
+    <style>
+      body { 
+        margin: 0; 
+        padding: 0; 
+		background-color: #707682;
+      }
+      #map { 
+        position: absolute; 
+        top: 0; 
+        bottom: 0; 
+		left: 0;
+        width: 75%; 
+      }
+	  
+	  #reviews {
+	  font-family: Verdana, sans-serif;
+	  margin-right: 0.4%;
+	  }
+	  
+	  #submissions {
+	  position: absolute;
+	  left: 82%;
+	  top: 94%;
+	  font-family: Verdana, sans-serif;
+	  color: #ff99b3;
+	  font-size: large;
+	  }
+	  
+	  #submissions:hover {color:white; cursor:pointer;}
+	  
+	  #title {
+	  margin-left: 77%;
+	  margin-right: 2%;
+	  margin-top: 2%;
+	  font-family: Verdana, sans-serif;
+	  font-size: xx-large;
+	  color: white;
+	  }
+	  
+	  #title:hover {color:#ff99b3; cursor: default;}
+	  
+	  #reviews:hover {cursor:default;}
+	  
+	  #conty {
+		height: 72.5%; 
+		width:22.5%; 
+		position: absolute;
+		left: 77%;
+		top: 22.5%;
+		bottom: 5%;
+		overflow-y: scroll;
+	  }
+	  
+	  #audy {margin-left: 77%;}
+	  
+	  #audy:focus {outline: none;}
+	  
+	  #songz {font-family: Verdana, sans-serif; color: #a5b3c0; font-size: small; margin-left: 79%; margin-top: 0; margin-right: 4%;}
+	  
+    </style>
+  </head>
+  <body>
+	<p id = 'title'>bronzeville blues</p>
+	<audio id = "audy" controls>
+			<source type="audio/mpeg">
+	</audio>
+	<p id = "songz"> </p>
+	<div id = 'conty'>
+		<p id = 'reviews'> </p>
+	</div>
+	<p onclick = "newEntry()" id = 'submissions'>acknowledgements</p>
+    <div id='map'></div>
+    <script>
+	
+	function newEntry() {
+		location.href = "submissions.html";
+	}
+	
+    // The value for 'accessToken' begins with 'pk...'
+    mapboxgl.accessToken = 'pk.eyJ1Ijoic2Ftc21nciIsImEiOiJjbGduOXIxcGcwZGp2M2VudDN0OXk3cWw5In0.UiSK6syLTB30dzrXjxl7iw'; 
+    const map = new mapboxgl.Map({
+      container: 'map',
+      // Replace YOUR_STYLE_URL with your style URL.
+      style: 'mapbox://styles/samsmgr/clh57t34q01as01qn7oj28q5w', 
+      center: [-87.619383, 41.81617],
+      zoom: 11.7
+    });
+
+
+	// Change it back to a pointer when it leaves.
+	map.on('mouseleave', 'bronzevilledata-9obyn8', () => {
+	map.getCanvas().style.cursor = '';
+	});
+	
+	const popup = new mapboxgl.Popup({
+	closeButton: false,
+	closeOnClick: false
+	});
+	 
+	map.on('mouseenter', 'bronzevilledata-9obyn8', (e) => {
+	// Change the cursor style as a UI indicator.
+	map.getCanvas().style.cursor = 'pointer';
+	popup.remove();
+	 
+	// Copy coordinates array.
+	const coordinates = e.features[0].geometry.coordinates.slice();
+	const description = e.features[0].properties.Name + "<br>" + e.features[0].properties.Date;
+	const aud = e.features[0].properties.Song;
+	 
+	// Ensure that if the map is zoomed out such that multiple
+	// copies of the feature are visible, the popup appears
+	// over the copy being pointed to.
+	while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+	coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+	}
+	 
+	// Populate the popup and set its coordinates
+	// based on the feature found.
+	popup.setLngLat(coordinates).setHTML(description).addTo(map);
+	});
+	map.on('mouseleave', 'bronzevilledata-9obyn8', () => {
+	map.getCanvas().style.cursor = '';
+	popup.remove();
+	});
+	
+	map.on('click', (event) => {
+	  // If the user clicked on one of your markers, get its information.
+	  const features = map.queryRenderedFeatures(event.point, {
+		layers: ['bronzevilledata-9obyn8'] // replace with your layer name
+	  });
+	  if (!features.length) {
+		return;
+	  }
+	  const feature = features[0];
+	  const auds = feature.properties.Song;
+	  const songy = feature.properties.songName;
+	  document.getElementById("audy").src = auds;
+	  document.getElementById("songz").innerHTML = songy;
+	  if(document.getElementById("songz").innerHTML == "undefined") {document.getElementById("songz").innerHTML = " ";}
+	  document.getElementById('reviews').innerHTML = `<b>${feature.properties.Name}</b><br>${feature.properties.Address}<br><br>${feature.properties.Description}`;
+	  
+	});
+
+    </script>
+  </body>
+</html>
