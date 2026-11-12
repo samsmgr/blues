@@ -178,55 +178,127 @@
 
 
 
-    /* ============================================
-       AUDIO
-       ============================================ */
+   /* ============================================
+   AUDIO
+   ============================================ */
 
     #audio-container {
+      width: 100%;
+      margin:
+        0
+        0
+        1.2rem
+        0;
+    
+      padding:
+        0.65rem
+        0.75rem;
+    
+      background:
+        rgba(255, 255, 255, 0.08);
+    
+      border-left:
+        3px solid
+        #ff99b3;
+    
+      border-radius: 4px;
+    
       flex-shrink: 0;
-
-      margin-bottom: 1rem;
     }
-
-
+    
+    
+    /*
+     * The hidden attribute completely removes the
+     * player when the selected location has no song.
+     */
+    
+    #audio-container[hidden] {
+      display: none;
+    }
+    
+    
+    /* SONG INFORMATION */
+    
+    #songz {
+      margin:
+        0
+        0
+        0.5rem
+        0;
+    
+      color: white;
+    
+      font-family:
+        Verdana,
+        sans-serif;
+    
+      font-size: 0.75rem;
+    
+      line-height: 1.4;
+    
+      overflow-wrap: break-word;
+    }
+    
+    
+    /*
+     * Your songName field can contain intentional
+     * markup such as:
+     *
+     * <i>Take My Hand, Precious Lord</i>,
+     * Thomas Dorsey
+     */
+    
+    #songz i,
+    #songz em {
+      color: #ff99b3;
+    }
+    
+    
+    /* AUDIO PLAYER */
+    
     #audy {
       display: block;
-
+    
       width: 100%;
-      max-width: 300px;
+      height: 32px;
+    
+      margin: 0;
+    
+      opacity: 0.85;
+    
+      transition:
+        opacity
+        0.15s
+        ease;
     }
-
-
+    
+    
+    #audy:hover,
     #audy:focus {
-      outline: none;
+      opacity: 1;
     }
-
-
-
-    /* ============================================
-       SONG TITLE
-       ============================================ */
-
-    #songz {
-      min-height: 1rem;
-
-      margin:
-        0.45rem
-        0
-        0
-        0;
-
-      color: #a5b3c0;
-
-      font-family:
-        "GapSans",
-        sans-serif;
-
-      font-size: 0.9rem;
-
-      line-height: 1.4;
-
-      overflow-wrap: break-word;
+    
+    
+    #audy:focus {
+      outline:
+        2px solid
+        #ff99b3;
+    
+      outline-offset: 3px;
+    }
+    
+    
+    /*
+     * Makes Chromium/WebKit's native audio controls
+     * a little less visually heavy.
+     *
+     * Browsers ultimately control the appearance
+     * of native <audio> controls, so they won't
+     * look perfectly identical everywhere.
+     */
+    
+    #audy::-webkit-media-controls-enclosure {
+      border-radius: 3px;
     }
 
 
@@ -733,8 +805,10 @@
 
       <!-- AUDIO -->
 
-      <div id="audio-container">
+      <div id="audio-container" hidden>
 
+        <p id="songz"></p>
+      
         <audio
           id="audy"
           controls
@@ -742,10 +816,7 @@
         >
           Your browser does not support the audio element.
         </audio>
-
-
-        <p id="songz"></p>
-
+      
       </div>
 
 
@@ -1259,82 +1330,121 @@
 
 
 
-    /* ============================================
-       UPDATE AUDIO
-       ============================================ */
+function updateAudio(
+  audioSource,
+  songName
+) {
 
-    function updateAudio(
-      audioSource,
-      songName
-    ) {
-
-
-      const audio =
-        document.getElementById(
-          "audy"
-        );
+  const audioContainer =
+    document.getElementById(
+      "audio-container"
+    );
 
 
-      const songDisplay =
-        document.getElementById(
-          "songz"
-        );
+  const audio =
+    document.getElementById(
+      "audy"
+    );
 
 
-
-      /*
-       * If Song exists, switch the player to it.
-       */
-
-      if (audioSource) {
-
-        /*
-         * Pause the previous recording before
-         * loading the newly selected one.
-         */
-
-        audio.pause();
+  const songDisplay =
+    document.getElementById(
+      "songz"
+    );
 
 
-        audio.src =
-          audioSource;
+  /* ========================================
+     FEATURE HAS AUDIO
+     ======================================== */
+
+  if (audioSource) {
+
+    /*
+     * Stop anything that was previously
+     * playing before switching tracks.
+     */
+
+    audio.pause();
 
 
-        audio.load();
+    /*
+     * Load the selected location's audio.
+     */
 
-      }
-
-
-      /*
-       * If the selected feature doesn't contain
-       * an audio URL, clear the previous song.
-       */
-
-      else {
-
-        audio.pause();
+    audio.src =
+      audioSource;
 
 
-        audio.removeAttribute(
-          "src"
-        );
+    audio.load();
 
 
-        audio.load();
+    /*
+     * songName intentionally supports your
+     * existing HTML formatting, for example:
+     *
+     * <i>Take My Hand, Precious Lord</i>,
+     * Thomas Dorsey
+     */
 
-      }
+    songDisplay.innerHTML =
+      songName || "";
 
 
+    /*
+     * Reveal the audio section only now that
+     * we know this location contains audio.
+     */
 
-      /*
-       * This replaces the original
-       * "undefined" string check.
-       */
+    audioContainer.hidden =
+      false;
 
-      songDisplay.innerHTML =
-        songName || "";
+  }
 
-    }
+
+  /* ========================================
+     FEATURE DOES NOT HAVE AUDIO
+     ======================================== */
+
+  else {
+
+    /*
+     * Stop audio from the previously
+     * selected location.
+     */
+
+    audio.pause();
+
+
+    /*
+     * Completely remove the old source.
+     */
+
+    audio.removeAttribute(
+      "src"
+    );
+
+
+    audio.load();
+
+
+    /*
+     * Clear the previous song name.
+     */
+
+    songDisplay.innerHTML =
+      "";
+
+
+    /*
+     * Hide the entire audio section.
+     */
+
+    audioContainer.hidden =
+      true;
+
+  }
+
+}
 
 
 
